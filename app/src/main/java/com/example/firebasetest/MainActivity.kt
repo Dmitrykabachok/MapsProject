@@ -1,6 +1,7 @@
 package com.example.firebasetest
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var signOutButton: Button
     var counter = 1
     val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+    val MESSAGE = "START_MAPS"
     lateinit var user: User
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         userLogedInTextView = findViewById(R.id.userLogedInText)
         signOutButton = findViewById(R.id.signOutButton)
 
-        signOutButton.setOnClickListener{
+        signOutButton.setOnClickListener {
             auth.signOut()
             userIsUnknown()
 
@@ -81,13 +83,16 @@ class MainActivity : AppCompatActivity() {
                 ).addOnCompleteListener(
                     OnCompleteListener {
                         if (it.isSuccessful) {
-                            if(emailText.text.toString().trim().matches(emailPattern.toRegex())){
+                            if (emailText.text.toString().trim().matches(emailPattern.toRegex())) {
                                 verifyEmail()
                                 userIsLoged()
                                 Log.d("USER_CHECK", "USER_SIGN_UP_SUCCESSFUL")
-                            }
-                            else{
-                                Toast.makeText(applicationContext,"Invalid email",  Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "Invalid email",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
                         } else {
@@ -103,16 +108,16 @@ class MainActivity : AppCompatActivity() {
             if (!TextUtils.isEmpty(passwordText.text.toString()) and !TextUtils.isEmpty(emailText.text.toString())) {
                 auth.signInWithEmailAndPassword(
                     emailText.text.toString(),
-                    passwordText.text.toString()).addOnCompleteListener {
-                    if (it.isSuccessful){
+                    passwordText.text.toString()
+                ).addOnCompleteListener {
+                    if (it.isSuccessful) {
                         if (it.isSuccessful) {
                             Log.d("USER_CHECK", "USER_SIGN_IN_SUCCESSFUL")
-                            Log.d("USER_CHECK","as ${auth.currentUser?.email}")
+                            Log.d("USER_CHECK", "as ${auth.currentUser?.email}")
                             userIsLoged()
-                            
+
                         } else {
                             Log.d("USER_CHECK", "USER_SIGN_IN_ERROR")
-
 
                         }
                     }
@@ -120,7 +125,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun userIsUnknown(){
+
+    private fun userIsUnknown() {
         userLogedInTextView.visibility = View.GONE
         signOutButton.visibility = View.GONE
         emailText.visibility = View.VISIBLE
@@ -130,53 +136,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun userIsLoged() {
-         userLogedInTextView.visibility = View.VISIBLE
-            signOutButton.visibility = View.VISIBLE
-            emailText.visibility = View.GONE
-            passwordText.visibility = View.GONE
-            inButton.visibility = View.GONE
-            upButton.visibility = View.GONE
+        val intent = Intent(this, MapsActivity::class.java).apply {
+            putExtra(MESSAGE, "Hello")
         }
+        startActivity(intent)
+    }
 
     @SuppressLint("ShowToast")
-    private fun verifyEmail(){
-        auth.currentUser?.sendEmailVerification()?.addOnCompleteListener{
-            if(it.isSuccessful){
+    private fun verifyEmail() {
+        auth.currentUser?.sendEmailVerification()?.addOnCompleteListener {
+            if (it.isSuccessful) {
                 Log.d("USER_CHECK", "VERIFICATION")
-                Toast.makeText(applicationContext,"check your email", Toast.LENGTH_SHORT)
-            }
-            else{
-                Toast.makeText(applicationContext,"verification error", Toast.LENGTH_SHORT)
+                Toast.makeText(applicationContext, "check your email", Toast.LENGTH_SHORT)
+            } else {
+                Toast.makeText(applicationContext, "verification error", Toast.LENGTH_SHORT)
 
             }
         }
     }
-    private fun CharSequence?.isValidEmail() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
+
+    private fun CharSequence?.isValidEmail() =
+        !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
+
+
 }
 
-/*
- button.setOnClickListener{
-            user = User("aaaaa$counter", "bbb@gmail.com")
-            rf.push().setValue(user)
-            myRef.setValue(user)
-            Log.d("DATABASE_CHECK","SENT")
-            counter++
-        }
-
-            myRef.addValueEventListener(object: ValueEventListener {
-
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    // This method is called once with the initial value and again
-                    // whenever data at this location is updated.
-
-                    val value = snapshot.getValue()
-
-                    Log.d("TAG","VALUE IS " + value)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.w("TAG", "Failed to read value.", error.toException())
-                }
-
-            })
- */
